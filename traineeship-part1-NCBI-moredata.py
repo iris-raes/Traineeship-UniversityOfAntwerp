@@ -28,10 +28,11 @@ print("5 ---> If you want to search for <Inversions in Human (dbVar)>\n")
 print("6 ---> If you want to search for <Less common insertions and deletions in Human (dbVar)>\n")
 print("7 ---> If you want to search for <Short Tandem Repeats in Human (dbVar)>\n")
 print("8 ---> If you want to search for <Substitutions, alterations, dublications and translocations in Human (dbVar)>\n")
-print("9 ---> If you want to search for <ClinVar variants>\n")
-print("10 ---> If you want to search for 1, 2, 3, 4, 5, 6, 7, 8, 9\n")
+print("9 ---> If you want to search for <Short ClinVar variants>\n")
+print("10 ---> If you want to search for <Long ClinVar variants>\n")
+print("11 ---> If you want to search for 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\n")
 choiceofsearch = str(input("Number: "))
-listofnumbers = ["1","2","3","4","5","6","7","8","9","10"]
+listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11"]
 while choiceofsearch not in listofnumbers:
     choiceofsearch = str(input("Number mentioned above: "))
 print("\nThe current Working Directory is '{}'.\nThe search results will be saved in the folder 'NCBI-search-results'.\n".format(os.getcwd()))
@@ -117,7 +118,7 @@ with open('results-nucleotide.csv', mode='w') as result_nucleotide:
 result_nucleotide.close()
 print("Results are in 'results-nucleotide.csv'\n")
 
-if choiceofsearch == "1" or choiceofsearch == "10":
+if choiceofsearch == "1" or choiceofsearch == "11":
     ##### dbVar search
     ### Setting up query
     ### Pathogenic Copy Number Variation in human
@@ -162,7 +163,7 @@ if choiceofsearch == "1" or choiceofsearch == "10":
     result_CNV.close()
     print("Results are in 'results-CNV-dbVar.csv'\n")
 
-if choiceofsearch == "2" or choiceofsearch == "10":
+if choiceofsearch == "2" or choiceofsearch == "11":
     ##### dbVar search
     ### Setting up query
     ### Copy Number Variation without clinical assertion in human
@@ -207,7 +208,7 @@ if choiceofsearch == "2" or choiceofsearch == "10":
     result_CNV.close()
     print("Results are in 'results-CNV-noclin-dbVar.csv'\n")
 
-if choiceofsearch == "3" or choiceofsearch == "10":
+if choiceofsearch == "3" or choiceofsearch == "11":
     ##### dbVar search
     ### Setting up query
     ### Copy Number Variation not reported as pathogenic in human
@@ -255,7 +256,7 @@ if choiceofsearch == "3" or choiceofsearch == "10":
         result_CNV.close()
     print("Results are in 'results-CNV-notpathogenic-dbVar.csv'\n")
 
-if choiceofsearch == "4" or choiceofsearch == "10":
+if choiceofsearch == "4" or choiceofsearch == "11":
     ### Insertion in human
     insertion = []
     insertion_esearch = eclient.esearch(db='dbVar',
@@ -297,7 +298,7 @@ if choiceofsearch == "4" or choiceofsearch == "10":
     result_insertion.close()
     print("Results are in 'results-insertion-dbVar.csv'\n")
 
-if choiceofsearch == "5" or choiceofsearch == "10":
+if choiceofsearch == "5" or choiceofsearch == "11":
     ### Inversion in human
     inversion = []
     inversion_esearch = eclient.esearch(db='dbVar',
@@ -333,7 +334,7 @@ if choiceofsearch == "5" or choiceofsearch == "10":
     result_inversion.close()
     print("Results are in 'results-inversion-dbVar.csv'\n")
 
-if choiceofsearch == "6" or choiceofsearch == "10":
+if choiceofsearch == "6" or choiceofsearch == "11":
     ##### dbVar search
     ### Setting up query
     ### Less common insertions and deletions in human
@@ -388,7 +389,7 @@ if choiceofsearch == "6" or choiceofsearch == "10":
         result_indel.close()
     print("Results are in 'results-lesscommon-indel-dbVar.csv'\n")
 
-if choiceofsearch == "7" or choiceofsearch == "10":
+if choiceofsearch == "7" or choiceofsearch == "11":
     ### Short Tandem Repeats in human (seems to be less important)
     STR = []
     STR_esearch = eclient.esearch(db='dbVar',
@@ -430,7 +431,7 @@ if choiceofsearch == "7" or choiceofsearch == "10":
     result_STR.close()
     print("Results are in 'results-STR-dbVar.csv'\n")
 
-if choiceofsearch == "8" or choiceofsearch == "10":
+if choiceofsearch == "8" or choiceofsearch == "11":
     ##### dbVar search
     ### Setting up query
     ### Substitutions, alterations, dublications and translocations in human
@@ -485,7 +486,7 @@ if choiceofsearch == "8" or choiceofsearch == "10":
         result_complexalt.close()
     print("Results are in 'results-complexalt-dbVar.csv'\n")
 
-if choiceofsearch == "9" or choiceofsearch == "10":
+if choiceofsearch == "9" or choiceofsearch == "11":
     ##### ClinVar search
     ### Setting up query 
     ClinVar = []
@@ -502,7 +503,7 @@ if choiceofsearch == "9" or choiceofsearch == "10":
     Entrez.email = "iris.raes@hotmail.com"
     ### For each id in ClinVar
     ### Save data to csv file
-    with open('results-ClinVar.csv', mode='w') as result_ClinVar:
+    with open('results-ClinVar-short.csv', mode='w') as result_ClinVar:
         result_writer = csv.writer(result_ClinVar,delimiter=';')
         result_writer.writerow(["ClinVar_variant_id","title","accession","type","description","protein_change","Chr_1","assembly1","Chr_2","assembly2","source_id"])
         for ids in ClinVar:
@@ -538,6 +539,65 @@ if choiceofsearch == "9" or choiceofsearch == "10":
             ###
     ### Close csv file
     result_ClinVar.close()
-    print("Results are in 'results-ClinVar.csv'\n")
+    print("Results are in 'results-ClinVar-short.csv'\n")
+
+if choiceofsearch == "10" or choiceofsearch == "11":
+    ##### ClinVar search
+    ### Setting up query 
+    ClinVar = []
+    ClinVar_esearch = eclient.esearch(db='ClinVar',
+            term=gene+'[gene] NOT "Single gene"')
+    print("\nLoading currently available ids from ClinVar...")
+    print("="*70)
+    print("\nClinVar ids: ")
+    print(ClinVar_esearch.ids)
+    for item in ClinVar_esearch.ids:
+        ClinVar.append(item)
+    print("\nSearch results: {}\n".format(ClinVar_esearch.count))
+    ### Esummary for retrieving information
+    Entrez.email = "iris.raes@hotmail.com"
+    ### For each id in ClinVar
+    ### Save data to csv file
+    with open('results-ClinVar-long.csv', mode='w') as result_ClinVar:
+        result_writer = csv.writer(result_ClinVar,delimiter=';')
+        result_writer.writerow(["ClinVar_variant_id","title","accession","type","description","protein_change","Chr_1","assembly1","Chr_2","assembly2","source_id"])
+        for ids in ClinVar:
+            handle = Entrez.esummary(db="ClinVar", id=ids)
+            record = Entrez.read(handle)
+            handle.close()
+            title = record['DocumentSummarySet']['DocumentSummary'][0].get('title')
+            accession = record['DocumentSummarySet']['DocumentSummary'][0].get('accession_version')
+            types = record['DocumentSummarySet']['DocumentSummary'][0].get('obj_type')
+            description = record['DocumentSummarySet']['DocumentSummary'][0]['clinical_significance'].get('description')
+            protein_change = record['DocumentSummarySet']['DocumentSummary'][0].get('protein_change')
+            if record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'] != []:
+                Chr_1 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][0].get('chr')
+                assembly1 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][0].get('assembly_name')
+                start1 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][0].get('start')
+                end1 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][0].get('stop')
+                if record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0].get('variation_loc') != []:
+                    try:
+                        Chr_2 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][1].get('chr')
+                        assembly2 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][1].get('assembly_name')
+                        start2 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][1].get('start')
+                        end2 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][1].get('stop')
+                    except:
+                        Chr_2 = ""
+                        assembly2 = "not applicable"
+                        start2 = "X"
+                        end2 = "X"
+            if record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'] != []:
+                try:
+                    dbsource = record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'][0]['trait_xrefs'][0].get('db_source')
+                    dbid = record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'][0]['trait_xrefs'][0].get('db_id')
+                except:
+                    dbsource = "/"
+                    dbid = ""
+            ### Write info to csv file, row by row
+            result_writer.writerow([ids,title,accession,types,description,protein_change,Chr_1,assembly1+":"+start1+"-"+end1,Chr_2,assembly2+":"+start2+"-"+end2,dbsource+" ("+dbid+")"])
+            ###
+    ### Close csv file
+    result_ClinVar.close()
+    print("Results are in 'results-ClinVar-long.csv'\n")
 
 print("\n\n\t*** NCBI Search successful ***\n\n")
