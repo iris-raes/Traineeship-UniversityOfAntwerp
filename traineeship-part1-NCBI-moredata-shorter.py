@@ -162,7 +162,7 @@ if choiceofsearch in ["11","1","2","3","4","5","6","7"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_dbVar:
             result_writer = csv.writer(result_dbVar,delimiter=';')
-            result_writer.writerow(["CNV_variant_id","variant_region_id","type","study_ID","clinical_assertion","Chr","assembly1","assembly2"])
+            result_writer.writerow(["dbVar_variant_id","variant_region_id","type","study_ID","clinical_assertion","Chr","assembly1","assembly2"])
             for ids in dbVar:
                 handle = Entrez.esummary(db="dbVar", id=ids)
                 record = Entrez.read(handle)
@@ -200,11 +200,11 @@ if choiceofsearch in ["11","1","2","3","4","5","6","7"]:
 #########################################################################################################
 
 if choiceofsearch == "11":
-    terms = {gene+'[gene] AND "Single gene"':'results-ClinVar-short.csv',gene+'[gene] NOT "Single gene"':'results-ClinVar-long.csv'}
+    terms = {gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv',gene+'[gene] NOT "Single gene"':'results-ClinVar-long.csv'}
 if choiceofsearch == "8":
-    terms={gene+'[gene] AND "Single gene"':'results-ClinVar-short.csv'}
+    terms={gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv'}
 if choiceofsearch == "9":
-    terms={gene+'[gene] NOT "Single gene"':'results-ClinVar-long.csv'}
+    terms={gene+'[gene] NOT "Single nucleotide"':'results-ClinVar-long.csv'}
 
 ##### ClinVar search
 ### Setting up query 
