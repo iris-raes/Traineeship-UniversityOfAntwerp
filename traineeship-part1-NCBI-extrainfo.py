@@ -204,7 +204,7 @@ if choiceofsearch in ["11","1","2","3","4","5","6","7"]:
 #########################################################################################################
 
 if choiceofsearch == "11":
-    terms = {gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv',gene+'[gene] NOT "Single gene"':'results-ClinVar-long.csv'}
+    terms = {gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv',gene+'[gene] NOT "Single nucleotide"':'results-ClinVar-long.csv'}
 if choiceofsearch == "8":
     terms={gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv'}
 if choiceofsearch == "9":
