@@ -33,10 +33,11 @@ print("6 ---> If you want to search for <Short Tandem Repeats in Humans (dbVar)>
 print("7 ---> If you want to search for <Less common types of variants in Humans (dbVar)>\n")
 print("8 ---> If you want to search for <Short ClinVar variants>\n")
 print("9 ---> If you want to search for <Long ClinVar variants>\n")
-print("10 ---> If you want to search for <Missense, non-coding and synonymous variation in dbSNP>\n")
-print("11 ---> If you want to search for 1, 2, 3, 4, 5, 6, 7, 8, 9, 10\n")
+print("10 ---> If you want to search for <Common (>1%) small genetic variations in dbSNP>\n")
+print("11 ---> If you want to search for <PubMed Cited small genetic variations in dbSNP>\n")
+print("12 ---> If you want to search for 4, 5, 6, 7, 8, 9, 10, 11\n")
 choiceofsearch = str(input("Number: "))
-listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11"]
+listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11","12"]
 while choiceofsearch not in listofnumbers:
     choiceofsearch = str(input("Number mentioned above: "))
 print("\nThe current Working Directory is '{}'.\nThe search results will be saved in the folder 'NCBI-search-results'.\n".format(os.getcwd()))
@@ -125,11 +126,8 @@ print("Results are in 'results-nucleotide.csv'\n")
 
 #########################################################################################################
 
-if choiceofsearch == "11":
-    terms = {gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "copy number variation"[Variant Type] AND "Pathogenic"[clinical_interpretation]) AND "VARIANT"[OBJ_TYPE]':'results-CNV-dbVar.csv',
-    gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "copy number variation"[Variant Type] AND "not reported"[clinical_interpretation]) AND "VARIANT"[OBJ_TYPE]':'results-CNV-noclinint-dbVar.csv',
-    gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "copy number variation"[Variant Type] NOT "not reported"[clinical_interpretation]) AND "VARIANT"[OBJ_TYPE]':'results-CNV-clinint-dbVar.csv',
-    gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "insertion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-insertion-dbVar.csv',
+if choiceofsearch == "12":
+    terms = {gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "insertion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-insertion-dbVar.csv',
     gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "inversion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-inversion-dbVar.csv',
     gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-STR-dbVar.csv',
     gene+'[All Fields] AND ("Homo sapiens"[Organism] NOT "copy number variation"[Variant Type] NOT "insertion"[Variant Type] NOT "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-lesscommon-dbVar.csv'}
@@ -150,7 +148,7 @@ if choiceofsearch == "7":
 
 ##### dbVar search
 ### Setting up query
-if choiceofsearch in ["11","1","2","3","4","5","6","7"]:
+if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
     for key in terms:
         dbVar = []
         dbVar_esearch = eclient.esearch(db='dbVar',term=key)
@@ -166,44 +164,100 @@ if choiceofsearch in ["11","1","2","3","4","5","6","7"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_dbVar:
             result_writer = csv.writer(result_dbVar,delimiter=';')
-            result_writer.writerow(["dbVar_variant_id","variant_region_id","type","study_ID","clinical_assertion","Chr","assembly1","assembly2"])
+            if choiceofsearch in ["1","3"]:
+                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","copy_number","allele_origin","subject_phenotype","study_ID","clinical_assertion","ClinVar_id","Chr","assembly1","assembly2"])
+            else:
+                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","sample_id","zygosity","study_ID","clinical_assertion","Chr","assembly1","assembly2"])
             for ids in dbVar:
                 handle = Entrez.esummary(db="dbVar", id=ids)
                 record = Entrez.read(handle)
                 handle.close()
                 varregid = record['DocumentSummarySet']['DocumentSummary'][0].get('SV')
+                if choiceofsearch in ["1","3"]:
+                    url = "https://www.ncbi.nlm.nih.gov/dbvar/variants/"+varregid+"/#VariantClinical"
+                    response = urllib.request.urlopen(url)
+                    content = response.read()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    table = soup.find('table', {"data-column-types" : '["fnc:strnumSort","fnc:strnumSort"]'})
+                    headers = table.find('thead')
+                    values = table.find('tbody')
+                    header = headers.find_all('th')
+                    value = values.find_all('td')
+                    value = [re.sub('<a.*?>|</a>', '', str(v)) for v in value]
+                    value = [re.sub('<td.*?>|</td>', '', str(v)) for v in value]
+                    if len(header) < len(value):
+                        val = value[0:len(header)*2]
+                        value1 = val[:len(val)//2]
+                        value2 = val[len(val)//2:]
+                        if len(value)/len(header) > 2:
+                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                        else:
+                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                        merged = [re.sub(',', '-', str(v)) for v in merged]
+                        dictionary = {h.string:v for h,v in zip(header,merged)}
+                    else:
+                        dictionary = {h.string:v for h,v in zip(header,value)}
+                    varcall = dictionary.get("Variant Call ID","")
+                    varcalltype = dictionary.get("Type","")
+                    allele = dictionary.get("Allele Origin","")
+                    phen = dictionary.get("Subject Phenotype","")
+                    clinvarid = dictionary.get("ClinVar ID","")
+                    copynr = dictionary.get("Copy number","")
+                else:
+                    url = "https://www.ncbi.nlm.nih.gov/dbvar/variants/"+varregid+"/#VariantDetails"
+                    response = urllib.request.urlopen(url)
+                    content = response.read()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    table = soup.find('div', {"id" : "support_variant_set"})
+                    headers = table.find('thead')
+                    values = table.find('tbody')
+                    header = headers.find_all('th')
+                    value = values.find_all('td')
+                    value = [re.sub('<a.*?>|</a>', '', str(v)) for v in value]
+                    value = [re.sub('<td.*?>|</td>', '', str(v)) for v in value]
+                    if len(header) < len(value):
+                        val = value[0:len(header)*2]
+                        value1 = val[:len(val)//2]
+                        value2 = val[len(val)//2:]
+                        if len(value)/len(header) > 2:
+                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                        else:
+                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                        merged = [re.sub(',', '-', str(v)) for v in merged]
+                        dictionary = {h.string:v for h,v in zip(header,merged)}
+                    else:
+                        dictionary = {h.string:v for h,v in zip(header,value)}
+                    varcall = dictionary.get("Variant Call ID","")
+                    varcalltype = dictionary.get("Type","")
+                    sample = dictionary.get("Sample ID","")
+                    zygosity = dictionary.get("Zygosity","")
                 types = record['DocumentSummarySet']['DocumentSummary'][0].get('dbVarVariantTypeList')
                 studyid = record['DocumentSummarySet']['DocumentSummary'][0].get('ST')
                 try:
                     clinicalassertion = record['DocumentSummarySet']['DocumentSummary'][0].get('dbVarClinicalSignificanceList')
                 except:
                     clinicalassertion = "n/a"
-                if record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'] != []:
-                    Chr = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr')
-                    assembly1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Assembly')
-                    start1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr_start')
-                    end1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr_end')
-                    assembly2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Assembly')
-                    start2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_start')
-                    end2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_end')
-                else:
-                    Chr = ""
-                    assembly1 = "not applicable"
-                    start1 = "X"
-                    end1 = "X"
-                    assembly2 = "not applicable"
-                    start2 = "X"
-                    end2 = "X"
+                Chr = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr')
+                assembly1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Assembly')
+                start1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr_start')
+                end1 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][0].get('Chr_end')
+                assembly2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Assembly')
+                start2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_start')
+                end2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_end')
                 ### Write info to csv file, row by row
-                result_writer.writerow([ids,varregid,types,studyid,clinicalassertion,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2])
-                ###
+                if choiceofsearch in ["1","3"]:
+                    result_writer.writerow([ids,varregid,types,varcall,varcalltype,copynr,allele,phen,studyid,
+                    clinicalassertion,clinvarid,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2])
+                else:
+                    result_writer.writerow([ids,varregid,types,varcall,varcalltype,sample,zygosity,studyid,
+                    clinicalassertion,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2])
         ### Close csv file
         result_dbVar.close()
         print("Results are in '"+terms[key]+"'\n")
 
 #########################################################################################################
 
-if choiceofsearch == "11":
+if choiceofsearch == "12":
     terms = {gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv',gene+'[gene] NOT "Single nucleotide"':'results-ClinVar-long.csv'}
 if choiceofsearch == "8":
     terms={gene+'[gene] AND "Single nucleotide"':'results-ClinVar-short.csv'}
@@ -212,7 +266,7 @@ if choiceofsearch == "9":
 
 ##### ClinVar search
 ### Setting up query 
-if choiceofsearch in ["11","8","9"]:
+if choiceofsearch in ["12","8","9"]:
     for key in terms:
         ClinVar = []
         ClinVar_esearch = eclient.esearch(db='ClinVar',term=key)
@@ -268,12 +322,16 @@ if choiceofsearch in ["11","8","9"]:
     
 #########################################################################################################
 
-if choiceofsearch in ["11","10"]:
-    terms = {gene+'[All Fields] AND (00000.0100[GLOBAL_MAF] : 00000.1000[GLOBAL_MAF]) NOT intron variant[Function_Class]':'results-dbSNP.csv'}
+if choiceofsearch  == "12":
+    terms = {gene+'[All Fields] AND (00000.0100[GLOBAL_MAF] : 00000.1000[GLOBAL_MAF])':'results-common-dbSNP.csv',gene+'[All Fields] AND snp_pubmed_cited[Filter]':'results-cited-dbSNP.csv'}
+if choiceofsearch == "10":
+    terms = {gene+'[All Fields] AND (00000.0100[GLOBAL_MAF] : 00000.1000[GLOBAL_MAF])':'results-common-dbSNP.csv'}
+if choiceofsearch == "11":
+    terms = {gene+'[All Fields] AND snp_pubmed_cited[Filter]':'results-cited-dbSNP.csv'}
 
 ##### dbSNP search
 ### Setting up query 
-if choiceofsearch in ["11","10"]:
+if choiceofsearch in ["12","10","11"]:
     for key in terms:
         dbSNP = []
         dbSNP_esearch = eclient.esearch(db='snp',term=key)
@@ -289,18 +347,52 @@ if choiceofsearch in ["11","10"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_dbSNP:
             result_writer = csv.writer(result_dbSNP,delimiter=';')
-            result_writer.writerow(["dbSNP_variant_id","allele","variation type","Chr","assembly1","assembly2"])
+            result_writer.writerow(["dbSNP_variant_id","allele","variation type","functional consequence","Chr","assembly1","assembly2","PMID","title","author"])
             for ids in dbSNP:
                 handle = Entrez.esummary(db="snp", id=ids)
                 record = Entrez.read(handle)
                 handle.close()
                 allele = record['DocumentSummarySet']['DocumentSummary'][0].get('ALLELE')
                 vartype = record['DocumentSummarySet']['DocumentSummary'][0].get('SNP_CLASS')
+                conseq = record['DocumentSummarySet']['DocumentSummary'][0].get('FXN_CLASS')
+                conseq = conseq.replace(",", "/")
                 Chr = record['DocumentSummarySet']['DocumentSummary'][0].get('CHR')
                 assembly1 = record['DocumentSummarySet']['DocumentSummary'][0].get('CHRPOS_PREV_ASSM')
                 assembly2 = record['DocumentSummarySet']['DocumentSummary'][0].get('CHRPOS')
+                try:
+                    url = "https://www.ncbi.nlm.nih.gov/snp/"+str(ids)+"#publications"
+                    response = urllib.request.urlopen(url)
+                    content = response.read()
+                    soup = BeautifulSoup(content, 'html.parser')
+                    table = soup.find('table', {"id" : 'publication_datatable'})
+                    headers = table.find('thead')
+                    values = table.find('tbody')
+                    header = headers.find_all('th')
+                    value = values.find_all('td')
+                    value = [re.sub('<a.*?>|</a>', '', str(v)) for v in value]
+                    value = [re.sub('<td.*?>|</td>', '', str(v)) for v in value]
+                    value = [re.sub('\n', '', str(v)) for v in value]
+                    if len(header) < len(value):
+                        val = value[0:len(header)*2]
+                        value1 = val[:len(val)//2]
+                        value2 = val[len(val)//2:]
+                        if len(value)/len(header) > 2:
+                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                        else:
+                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                        merged = [re.sub(',', '-', str(v)) for v in merged]
+                        dictionary = {h.string:v for h,v in zip(header,merged)}
+                    else:
+                        dictionary = {h.string:v for h,v in zip(header,value)}
+                    pmid = dictionary.get("PMID","")
+                    title = dictionary.get("Title","")
+                    author = dictionary.get("Author","")
+                except:
+                    pmid = ""
+                    title = ""
+                    author = ""
                 ### Write info to csv file, row by row
-                result_writer.writerow([ids,allele,vartype,Chr,"GRCh37-"+assembly1,"GRCh38-"+assembly2])
+                result_writer.writerow(["rs"+str(ids),allele,vartype,conseq,Chr,"GRCh37-"+assembly1,"GRCh38-"+assembly2,pmid,title,author])
                 ###
         ### Close csv file
         result_dbSNP.close()
