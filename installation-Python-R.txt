@@ -1,0 +1,30 @@
+For those who want to try python and R in the future
+-----------------------------------------------------------------------------------------------------------------------------------
+
+1) Install Visual Studio Code for Windows:
+
+Go to https://code.visualstudio.com/download and download the latest version.
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+2) How to Install Python 3 on Windows 10:
+
+https://www.youtube.com/watch?v=V_ACbv4329E
+(until 3:10)
+
+Open your Visual Studio Code or use Windows PowerShell;
+(On top in Visual Studio Code -> Terminal --> New Terminal)
+*To test the installation: type in terminal ->" python " ('>>>' appears), quit by typing " quit() "
+*check pip3 (used to install packages): type in terminal -> " pip3 " (options menu should appear)
+
+Type in terminal: python -m pip install --upgrade pip
+
+-----------------------------------------------------------------------------------------------------------------------------------
+
+3) How to Install R on Windows 10:
+
+Go to https://cran.rstudio.com/ and download R for Windows (install R for the first time, R-4.0.0 is already available for Windows).
+(create a desktop icon)
+Go to https://www.rstudio.com/products/rstudio/download/ to install R studio; scroll down -> '2.Download RStudio Desktop'.
+
+-----------------------------------------------------------------------------------------------------------------------------------
