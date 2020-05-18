@@ -9,9 +9,9 @@ output: html_document
 
 ```{r para}
 gene <- "Dipeptidyl Peptidase 9"
-typeofvariant <- "Copy Number Variation"
+typeofvariant <- "SNPs"
 
-if(gene == "Dipeptidyl Peptidase 9"){start = 4675239
+if(gene == "Dipeptidyl Peptidase 9"){start = 4675239 
                                     end = 4723855}
 if(gene == "Dipeptidyl Peptidase 8"){start = 65734805
                                     end = 65810040}
@@ -86,6 +86,7 @@ Gviz_table <- function(filetable) {
   id1 <- tablepart1[1]
   if(any(names(tablepart1) == 'variant_region_id')){regionid1 <- tablepart1[2]}
   if(any(names(tablepart1) == 'study_ID')){studyid1 <- tablepart1[4]}
+  if(any(names(tablepart1) == 'accession')){acc1 <- tablepart1[3]}
   Chr_1a <- tablepart1[["Chr"]]
   Chr_1a <- gsub("[A-Za-z]", "", Chr_1a)
   Chr_1a <- sub("", "chr", Chr_1a)
@@ -95,8 +96,10 @@ Gviz_table <- function(filetable) {
   if(any(names(tablepart1) == 'variant_region_id') &
      any(names(tablepart1) == 'study_ID')){
     GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,regionid1,studyid1)
-  } else {
-    GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1)
+    } else if(any(names(tablepart1) == 'accession')) {
+      GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,acc1)
+    } else {
+      GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1)
   }
   names(GRCh37_assembly1)[names(GRCh37_assembly1) == "assembly1"] <- "assembly"
   names(GRCh37_assembly1)[names(GRCh37_assembly1) == "Chr_1a"] <- "chr"
@@ -106,6 +109,7 @@ Gviz_table <- function(filetable) {
   id2 <- tablepart2[1]
   if(any(names(tablepart2) == 'variant_region_id')){regionid2 <- tablepart2[2]}
   if(any(names(tablepart2) == 'study_ID')){studyid2 <- tablepart2[4]}
+  if(any(names(tablepart2) == 'accession')){acc2 <- tablepart2[3]}
   Chr_1b <- tablepart2[["Chr"]]
   Chr_1b <- gsub("[A-Za-z]", "", Chr_1b)
   Chr_1b <- sub("", "chr", Chr_1b)
@@ -115,8 +119,10 @@ Gviz_table <- function(filetable) {
   if(any(names(tablepart2) == 'variant_region_id') &
      any(names(tablepart2) == 'study_ID')){
     GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,regionid2,studyid2)
-  } else {
-    GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2)
+    } else if(any(names(tablepart1) == 'accession')) {
+      GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,acc2)
+    } else {
+     GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2)
   }
   names(GRCh37_assembly2)[names(GRCh37_assembly2) == "assembly2"] <- "assembly"
   names(GRCh37_assembly2)[names(GRCh37_assembly2) == "Chr_1b"] <- "chr"
@@ -138,8 +144,10 @@ TableObject$end[is.na(TableObject$end)] <- TableObject$start
 GrangesObject <- makeGRangesFromDataFrame(TableObject, keep.extra.columns=TRUE)
 
 if(as.numeric(TableObject$end[1])-as.numeric(TableObject$start[1]) > 100){
-  showthis <- list(showFeatureId = T, feature = TableObject$variant_region_id, showId = F, stackHeight = 0.75)
-} else {showthis <- list(showFeatureId = F, feature = F, showId = T, stackHeight = 0.4)} 
+  showthis <- list(showFeatureId = T, feature = TableObject$variant_region_id, showId = F, stackHeight = 0.75, 
+                   min.width = 1, rotation.item = 0)
+} else {showthis <- list(showFeatureId = T, feature = TableObject$variant_region_id, showId = F, stackHeight = 0.2, 
+                         min.width = 3.5, rotation.item = 35)} 
 ```
 
 ### Create individual plot tracks
@@ -172,8 +180,9 @@ atrack1 <- AnnotationTrack(GrangesObject,
                            cex.title = 1.1, 
                            feature = showthis$feature, 
                            cex.feature = 1,
-                           fontcolor.feature = "#616771", cex.group = 0.9, showthis$stackHeight,
-                           showFeatureId = showthis$showFeatureId, showId = showthis$showId)
+                           fontcolor.feature = "#616771", cex.group = 0.5, stackHeight = showthis$stackHeight,
+                           showFeatureId = showthis$showFeatureId, showId = showthis$showId, 
+                           min.width = showthis$min.width, rotation.item = showthis$rotation.item)
 ```
 
 ### Plot tracks
@@ -186,6 +195,7 @@ plotTracks(list(itrack1,gtrack1,grtrack1,atrack1),
            col = NULL,
            add53 = TRUE, add35 = TRUE,
            fill.range = "#FA8072",
-           fontface = 2, title.width = 0.3, sizes = c(0.3,0.5,0.5,1.9),
+           fontface = 2, title.width = 0.3, 
+           sizes = c(0.3,0.5,0.5,1.9),
            margin = 0, cex.id = 1.2)
 ```
