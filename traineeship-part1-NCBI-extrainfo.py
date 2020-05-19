@@ -21,7 +21,7 @@ from bs4 import BeautifulSoup
 ######
 print("\nPython version {}\n".format(sys.version))
 print("\nThis script performs an online search in NCBI databases: RefSeq Nucleotide, dbVar, ClinVar & dbSNP.\nThe NCBI E-utilities (ESearch, ESummary) are used.\n")
-print("RNA transcript variants for a specific gene will be gathered from UCSC (hg19) and NCBI RefSeq.\n")
+print("RNA transcript variants for a specific gene will be gathered from UCSC (hg19-hg38) and NCBI RefSeq.\n")
 gene = input("Specify the gene that will be used in the search query: ")
 print("Choose one of the following options:\n")
 print("1 ---> If you want to search for <Pathogenic Copy Number Variations in Humans (dbVar)>\n")
@@ -49,45 +49,47 @@ else:
     os.chdir(newfolder)
 ######
 
-##### Connection UCSC
-db = my.connect(host="genome-euro-mysql.soe.ucsc.edu",
-   user="genomep",
-   passwd="password",
-   db="hg19")
-c = db.cursor()
-##### ncbiRefSeq search
-no_rows = c.execute("SELECT * FROM ncbiRefSeq WHERE name2 LIKE '"+gene+"%'")
-result = c.fetchall()
-##### Close database
-db.close()
-print("\nLoading currently available accession numbers from NCBI RefSeq table...")
-print("="*70)
-print("\nTranscript variant accession numbers: ")
-accList = []
-### Save data to csv file
-with open('results-transcripts-UCSC.csv', mode='w') as result_transcripts:
-    result_writer = csv.writer(result_transcripts,delimiter=';')
-    result_writer.writerow(["chromosome","start","end","strand","gene","exon","transcript","symbol","ranges"])
-    transcriptvar = 0
-    for row in result:
-        transcript = row[1]
-        print(transcript)
-        accList.append(transcript)
-        starts = str(row[9])[2:-2]
-        ends = str(row[10])[2:-2]
-        starts1 = starts.split(",")
-        ends1 = ends.split(",")
-        j = 0
-        ex = 1
-        transcriptvar += 1
-        for i in starts1:
-            result_writer.writerow([row[2],i,ends1[j],row[3],row[12],ex,transcriptvar,row[1],str(row[4])+"-"+str(row[5])])
-            j += 1
-            ex += 1
-print("\nSearch results: {}\n".format(no_rows))
-### Close csv file
-result_transcripts.close()
-print("Results are in 'results-transcripts-UCSC.csv'\n")
+searchUCSC = {"hg19":'results-transcripts-UCSC-hg19.csv',"hg38":'results-transcripts-UCSC-hg38.csv'}
+for key in searchUCSC:
+    ##### Connection UCSC
+    db = my.connect(host="genome-euro-mysql.soe.ucsc.edu",
+        user="genomep",
+        passwd="password",
+        db=key)
+    c = db.cursor()
+    ##### ncbiRefSeq search
+    no_rows = c.execute("SELECT * FROM ncbiRefSeq WHERE name2 LIKE '"+gene+"%'")
+    result = c.fetchall()
+    ##### Close database
+    db.close()
+    print("\nLoading currently available accession numbers from NCBI RefSeq table...")
+    print("="*70)
+    print("\nTranscript variant accession numbers: ")
+    accList = []
+    ### Save data to csv file
+    with open(searchUCSC[key], mode='w') as result_transcripts:
+        result_writer = csv.writer(result_transcripts,delimiter=';')
+        result_writer.writerow(["chromosome","start","end","strand","gene","exon","transcript","symbol","ranges"])
+        transcriptvar = 0
+        for row in result:
+            transcript = row[1]
+            print(transcript)
+            accList.append(transcript)
+            starts = str(row[9])[2:-2]
+            ends = str(row[10])[2:-2]
+            starts1 = starts.split(",")
+            ends1 = ends.split(",")
+            j = 0
+            ex = 1
+            transcriptvar += 1
+            for i in starts1:
+                result_writer.writerow([row[2],i,ends1[j],row[3],row[12],ex,transcriptvar,row[1],str(row[4])+"-"+str(row[5])])
+                j += 1
+                ex += 1
+    print("\nSearch results: {}\n".format(no_rows))
+    ### Close csv file
+    result_transcripts.close()
+    print("Results are in '"+searchUCSC[key]+"'\n")
 
 ##### API-key (NCBI)
 eclient = Client(api_key="8ecce891e7fa036ff84bccc7c74e5138dc09")
@@ -118,7 +120,7 @@ with open('results-nucleotide.csv', mode='w') as result_nucleotide:
         handle.close()
         ### Write info to csv file, row by row
         splittedtitle = record[0]["Title"].split(",")
-        result_writer.writerow([record[0]["Id"],splittedtitle[0],splittedtitle[1],record[0]["AccessionVersion"],"Chr19","1-"+str(record[0]["Length"])])
+        result_writer.writerow([record[0]["Id"],splittedtitle[0],splittedtitle[1],record[0]["AccessionVersion"],"Chr19",str(record[0]["Length"])])
         ###
 ### Close csv file
 result_nucleotide.close()
@@ -165,9 +167,9 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
         with open(terms[key], mode='w') as result_dbVar:
             result_writer = csv.writer(result_dbVar,delimiter=';')
             if choiceofsearch in ["1","3"]:
-                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","copy_number","allele_origin","subject_phenotype","study_ID","clinical_assertion","ClinVar_id","Chr","assembly1","assembly2"])
+                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","copy_number","allele_origin","subject_phenotype","study_ID","clinical_assertion","ClinVar_id","Chr","assembly1","assembly2","assembly3"])
             else:
-                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","sample_id","zygosity","study_ID","clinical_assertion","Chr","assembly1","assembly2"])
+                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","sample_id","zygosity","subject_phenotype","study_ID","clinical_assertion","Chr","assembly1","assembly2","assembly3"])
             for ids in dbVar:
                 handle = Entrez.esummary(db="dbVar", id=ids)
                 record = Entrez.read(handle)
@@ -190,9 +192,9 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
                         value1 = val[:len(val)//2]
                         value2 = val[len(val)//2:]
                         if len(value)/len(header) > 2:
-                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2+"..." for v1,v2 in zip(value1,value2)]
                         else:
-                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2 for v1,v2 in zip(value1,value2)]
                         merged = [re.sub(',', '-', str(v)) for v in merged]
                         dictionary = {h.string:v for h,v in zip(header,merged)}
                     else:
@@ -220,9 +222,9 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
                         value1 = val[:len(val)//2]
                         value2 = val[len(val)//2:]
                         if len(value)/len(header) > 2:
-                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2+"..." for v1,v2 in zip(value1,value2)]
                         else:
-                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2 for v1,v2 in zip(value1,value2)]
                         merged = [re.sub(',', '-', str(v)) for v in merged]
                         dictionary = {h.string:v for h,v in zip(header,merged)}
                     else:
@@ -231,6 +233,7 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
                     varcalltype = dictionary.get("Type","")
                     sample = dictionary.get("Sample ID","")
                     zygosity = dictionary.get("Zygosity","")
+                    phen = dictionary.get("Subject Phenotype","")
                 types = record['DocumentSummarySet']['DocumentSummary'][0].get('dbVarVariantTypeList')
                 studyid = record['DocumentSummarySet']['DocumentSummary'][0].get('ST')
                 try:
@@ -244,13 +247,21 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
                 assembly2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Assembly')
                 start2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_start')
                 end2 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][1].get('Chr_end')
+                try:
+                    assembly3 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][2].get('Assembly')
+                    start3 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][2].get('Chr_start')
+                    end3 = record['DocumentSummarySet']['DocumentSummary'][0]['dbVarPlacementList'][2].get('Chr_end')
+                except:
+                    assembly3 = "not applicable"
+                    start3 = "X"
+                    end3 = "X"
                 ### Write info to csv file, row by row
                 if choiceofsearch in ["1","3"]:
                     result_writer.writerow([ids,varregid,types,varcall,varcalltype,copynr,allele,phen,studyid,
-                    clinicalassertion,clinvarid,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2])
+                    clinicalassertion,clinvarid,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,assembly3+":"+start3+"-"+end3])
                 else:
-                    result_writer.writerow([ids,varregid,types,varcall,varcalltype,sample,zygosity,studyid,
-                    clinicalassertion,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2])
+                    result_writer.writerow([ids,varregid,types,varcall,varcalltype,sample,zygosity,phen,studyid,
+                    clinicalassertion,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,assembly3+":"+start3+"-"+end3])
         ### Close csv file
         result_dbVar.close()
         print("Results are in '"+terms[key]+"'\n")
@@ -282,13 +293,13 @@ if choiceofsearch in ["12","8","9"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_ClinVar:
             result_writer = csv.writer(result_ClinVar,delimiter=';')
-            result_writer.writerow(["ClinVar_variant_id","title","accession","type","description","protein_change","Chr","assembly1","assembly2","source_id"])
+            result_writer.writerow(["ClinVar_variant_id","title","accession","type","description","protein_change","Chr","assembly1","assembly2","assembly3","source_id"])
             for ids in ClinVar:
                 handle = Entrez.esummary(db="ClinVar", id=ids)
                 record = Entrez.read(handle)
                 handle.close()
                 title = record['DocumentSummarySet']['DocumentSummary'][0].get('title')
-                accession = record['DocumentSummarySet']['DocumentSummary'][0].get('accession_version')
+                accession = record['DocumentSummarySet']['DocumentSummary'][0].get('accession')
                 types = record['DocumentSummarySet']['DocumentSummary'][0].get('obj_type')
                 description = record['DocumentSummarySet']['DocumentSummary'][0]['clinical_significance'].get('description')
                 protein_change = record['DocumentSummarySet']['DocumentSummary'][0].get('protein_change')
@@ -306,15 +317,33 @@ if choiceofsearch in ["12","8","9"]:
                             assembly2 = "not applicable"
                             start2 = "X"
                             end2 = "X"
+                        try:
+                            assembly3 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][2].get('assembly_name')
+                            start3 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][2].get('start')
+                            end3 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_loc'][2].get('stop')
+                        except:
+                            assembly3 = "not applicable"
+                            start3 = "X"
+                            end3 = "X"
                 if record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'] != []:
                     try:
                         dbsource = record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'][0]['trait_xrefs'][0].get('db_source')
                         dbid = record['DocumentSummarySet']['DocumentSummary'][0]['trait_set'][0]['trait_xrefs'][0].get('db_id')
+                        dbid2 = ""
                     except:
                         dbsource = ""
                         dbid = ""
+                if record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_xrefs'] != []:
+                    try:
+                        dbsource = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_xrefs'][0].get('db_source')
+                        dbid = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_xrefs'][0].get('db_id')
+                        dbid2 = record['DocumentSummarySet']['DocumentSummary'][0]['variation_set'][0]['variation_xrefs'][1].get('db_id')
+                    except:
+                        dbsource = ""
+                        dbid = ""
+                        dbid2 = ""
                 ### Write info to csv file, row by row
-                result_writer.writerow([ids,title,accession,types,description,protein_change,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,dbsource+" ("+dbid+")"])
+                result_writer.writerow([ids,title,accession,types,description,protein_change,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,assembly3+":"+start3+"-"+end3,dbsource+" ("+dbid+" "+dbid2+")"])
                 ###
         ### Close csv file
         result_ClinVar.close()
@@ -377,9 +406,9 @@ if choiceofsearch in ["12","10","11"]:
                         value1 = val[:len(val)//2]
                         value2 = val[len(val)//2:]
                         if len(value)/len(header) > 2:
-                            merged = [v1+"/"+v2+"..." for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2+"..." for v1,v2 in zip(value1,value2)]
                         else:
-                            merged = [v1+"/"+v2 for v1,v2 in zip(value1,value2)]
+                            merged = [v1+"//"+v2 for v1,v2 in zip(value1,value2)]
                         merged = [re.sub(',', '-', str(v)) for v in merged]
                         dictionary = {h.string:v for h,v in zip(header,merged)}
                     else:
