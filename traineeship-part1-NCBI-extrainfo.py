@@ -33,22 +33,30 @@ print("6 ---> If you want to search for <Short Tandem Repeats in Humans (dbVar)>
 print("7 ---> If you want to search for <Less common types of variants in Humans (dbVar)>\n")
 print("8 ---> If you want to search for <Short ClinVar variants>\n")
 print("9 ---> If you want to search for <Long ClinVar variants>\n")
-print("10 ---> If you want to search for <Common (>1%) small genetic variations in dbSNP>\n")
-print("11 ---> If you want to search for <PubMed Cited small genetic variations in dbSNP>\n")
+print("10 ---> If you want to search for <Common (>1%) short genetic variations in dbSNP>\n")
+print("11 ---> If you want to search for <PubMed Cited short genetic variations in dbSNP>\n")
 print("12 ---> If you want to search for 4, 5, 6, 7, 8, 9, 10, 11\n")
 choiceofsearch = str(input("Number: "))
 listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11","12"]
 while choiceofsearch not in listofnumbers:
     choiceofsearch = str(input("Number mentioned above: "))
 print("\nThe current Working Directory is '{}'.\nThe search results will be saved in the folder 'NCBI-search-results'.\n".format(os.getcwd()))
-newfolder = os.getcwd() + "/NCBI-search-results"
+newfolder = os.getcwd() + "/NCBI-search-results" 
+newfolder2 = os.getcwd() + "/NCBI-search-results/" + gene
 if os.path.isdir(newfolder):
     os.chdir(newfolder)
+    if os.path.isdir(newfolder2):
+        os.chdir(newfolder2)
+    else:
+        os.mkdir(newfolder2)
+        os.chdir(newfolder2)
 else:
     os.mkdir(newfolder)
     os.chdir(newfolder)
+    os.mkdir(newfolder2)
+    os.chdir(newfolder2)
 ######
-
+'''
 searchUCSC = {"hg19":'results-transcripts-UCSC-hg19.csv',"hg38":'results-transcripts-UCSC-hg38.csv'}
 for key in searchUCSC:
     ##### Connection UCSC
@@ -90,12 +98,12 @@ for key in searchUCSC:
     ### Close csv file
     result_transcripts.close()
     print("Results are in '"+searchUCSC[key]+"'\n")
-
+'''
 ##### API-key (NCBI)
 eclient = Client(api_key="8ecce891e7fa036ff84bccc7c74e5138dc09")
 #gene_efetch = eclient.efetch(db='gene', id=91039)
 Entrez.email = "iris.raes@hotmail.com"
-
+'''
 ##### nucleotide search
 ### Setting up query 
 mRNAtranscripts = []
@@ -113,7 +121,7 @@ print("\nSearch results: {}\n".format(transcriptmRNA_esearch.count))
 ### Save data to csv file
 with open('results-nucleotide.csv', mode='w') as result_nucleotide:
     result_writer = csv.writer(result_nucleotide,delimiter=';')
-    result_writer.writerow(["transcript_id","description","transcript_variant","accession","Chr","length_in_bp"])
+    result_writer.writerow(["transcript id","description","transcript variant","accession","Chr","length in bp"])
     for ids in mRNAtranscripts:
         handle = Entrez.esummary(db="nucleotide", id=ids)
         record = Entrez.read(handle)
@@ -125,14 +133,14 @@ with open('results-nucleotide.csv', mode='w') as result_nucleotide:
 ### Close csv file
 result_nucleotide.close()
 print("Results are in 'results-nucleotide.csv'\n")
-
+'''
 #########################################################################################################
 
 if choiceofsearch == "12":
     terms = {gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "insertion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-insertion-dbVar.csv',
     gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "inversion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-inversion-dbVar.csv',
     gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-STR-dbVar.csv',
-    gene+'[All Fields] AND ("Homo sapiens"[Organism] NOT "copy number variation"[Variant Type] NOT "insertion"[Variant Type] NOT "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-lesscommon-dbVar.csv'}
+    gene+'[All Fields] AND ("Homo sapiens"[Organism] NOT "copy number variation"[Variant Type] NOT "insertion"[Variant Type] NOT "short tandem repeat"[Variant Type] NOT "inversion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-lesscommon-dbVar.csv'}
 if choiceofsearch == "1":
     terms={gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "copy number variation"[Variant Type] AND "Pathogenic"[clinical_interpretation]) AND "VARIANT"[OBJ_TYPE]':'results-CNV-dbVar.csv'}
 if choiceofsearch == "2":
@@ -146,7 +154,7 @@ if choiceofsearch == "5":
 if choiceofsearch == "6":
     terms={gene+'[All Fields] AND ("Homo sapiens"[Organism] AND "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-STR-dbVar.csv'}
 if choiceofsearch == "7":
-    terms={gene+'[All Fields] AND ("Homo sapiens"[Organism] NOT "copy number variation"[Variant Type] NOT "insertion"[Variant Type] NOT "short tandem repeat"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-lesscommon-dbVar.csv'}
+    terms={gene+'[All Fields] AND ("Homo sapiens"[Organism] NOT "copy number variation"[Variant Type] NOT "insertion"[Variant Type] NOT "short tandem repeat"[Variant Type] NOT "inversion"[Variant Type]) AND "VARIANT"[OBJ_TYPE]':'results-lesscommon-dbVar.csv'}
 
 ##### dbVar search
 ### Setting up query
@@ -167,9 +175,9 @@ if choiceofsearch in ["12","1","2","3","4","5","6","7"]:
         with open(terms[key], mode='w') as result_dbVar:
             result_writer = csv.writer(result_dbVar,delimiter=';')
             if choiceofsearch in ["1","3"]:
-                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","copy_number","allele_origin","subject_phenotype","study_ID","clinical_assertion","ClinVar_id","Chr","assembly1","assembly2","assembly3"])
+                result_writer.writerow(["dbVar variant id","variant region id","type","variant call id","variant call type","copy number","allele origin","subject phenotype","study ID","clinical assertion","ClinVar id","Chr","assembly1","assembly2","assembly3"])
             else:
-                result_writer.writerow(["dbVar_variant_id","variant_region_id","type","variant_call_id","variant_call_type","sample_id","zygosity","subject_phenotype","study_ID","clinical_assertion","Chr","assembly1","assembly2","assembly3"])
+                result_writer.writerow(["dbVar variant id","variant region id","type","variant call id","variant call type","sample id","zygosity","subject phenotype","study ID","clinical assertion","Chr","assembly1","assembly2","assembly3"])
             for ids in dbVar:
                 handle = Entrez.esummary(db="dbVar", id=ids)
                 record = Entrez.read(handle)
@@ -293,7 +301,7 @@ if choiceofsearch in ["12","8","9"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_ClinVar:
             result_writer = csv.writer(result_ClinVar,delimiter=';')
-            result_writer.writerow(["ClinVar_variant_id","title","accession","type","description","protein_change","Chr","assembly1","assembly2","assembly3","source_id"])
+            result_writer.writerow(["ClinVar variant id","title","accession","description","type","protein change","Chr","assembly1","assembly2","assembly3","source id"])
             for ids in ClinVar:
                 handle = Entrez.esummary(db="ClinVar", id=ids)
                 record = Entrez.read(handle)
@@ -343,7 +351,7 @@ if choiceofsearch in ["12","8","9"]:
                         dbid = ""
                         dbid2 = ""
                 ### Write info to csv file, row by row
-                result_writer.writerow([ids,title,accession,types,description,protein_change,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,assembly3+":"+start3+"-"+end3,dbsource+" ("+dbid+" "+dbid2+")"])
+                result_writer.writerow([ids,title,accession,description,types,protein_change,Chr,assembly1+":"+start1+"-"+end1,assembly2+":"+start2+"-"+end2,assembly3+":"+start3+"-"+end3,dbsource+" ("+dbid+" "+dbid2+")"])
                 ###
         ### Close csv file
         result_ClinVar.close()
@@ -376,12 +384,13 @@ if choiceofsearch in ["12","10","11"]:
         ### Save data to csv file
         with open(terms[key], mode='w') as result_dbSNP:
             result_writer = csv.writer(result_dbSNP,delimiter=';')
-            result_writer.writerow(["dbSNP_variant_id","allele","variation type","functional consequence","Chr","assembly1","assembly2","PMID","title","author"])
+            result_writer.writerow(["dbSNP variant id","allele","variation type","functional consequence","Chr","assembly1","assembly2","PMID","title","author"])
             for ids in dbSNP:
                 handle = Entrez.esummary(db="snp", id=ids)
                 record = Entrez.read(handle)
                 handle.close()
-                allele = record['DocumentSummarySet']['DocumentSummary'][0].get('ALLELE')
+                docsum = record['DocumentSummarySet']['DocumentSummary'][0].get('DOCSUM')
+                allele =  re.search(r"SEQ=\[.*?\]", docsum).group(0)
                 vartype = record['DocumentSummarySet']['DocumentSummary'][0].get('SNP_CLASS')
                 conseq = record['DocumentSummarySet']['DocumentSummary'][0].get('FXN_CLASS')
                 conseq = conseq.replace(",", "/")
