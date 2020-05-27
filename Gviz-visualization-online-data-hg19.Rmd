@@ -87,6 +87,8 @@ Gviz_table <- function(filetable) {
   if(any(names(tablepart1) == 'variation.type')){type1 <- tablepart1[3]} else {type1 <- tablepart1[5]}
   if(any(names(tablepart1) == 'variant.region.id')){regionid1 <- tablepart1[2]}
   if(any(names(tablepart1) == 'accession')){acc1 <- tablepart1[3]}
+  if(any(names(tablepart1) == 'dbVar.variant.id')){clin1 <- tablepart1[10]}
+  if(any(names(tablepart1) == 'ClinVar.variant.id')){clin1 <- tablepart1[4]}
   Chr_1a <- tablepart1[["Chr"]]
   Chr_1a <- gsub("[A-Za-z]", "", Chr_1a)
   Chr_1a <- sub("", "chr", Chr_1a)
@@ -94,9 +96,9 @@ Gviz_table <- function(filetable) {
   assembly1 <- gsub(".*?:", "", assembly1)
   assembly1 <- separate(data = as.data.frame(assembly1), col = assembly1, into = c("start", "end"), sep = "-")
   if(any(names(tablepart1) == 'variant.region.id')) {
-    GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,regionid1,type1)
+    GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,regionid1,type1,clin1)
   } else if(any(names(tablepart1) == 'accession')) {
-    GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,acc1,type1)
+    GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,acc1,type1,clin1)
   } else {
     GRCh37_assembly1 <- data.frame(id1,Chr_1a,assembly1,type1)
   }
@@ -108,6 +110,8 @@ Gviz_table <- function(filetable) {
   if(any(names(tablepart2) == 'variation.type')){type2 <- tablepart2[3]} else {type2 <- tablepart2[5]}
   if(any(names(tablepart2) == 'variant.region.id')){regionid2 <- tablepart2[2]}
   if(any(names(tablepart2) == 'accession')){acc2 <- tablepart2[3]}
+  if(any(names(tablepart2) == 'dbVar.variant.id')){clin2 <- tablepart2[10]}
+  if(any(names(tablepart2) == 'ClinVar.variant.id')){clin2 <- tablepart2[4]}
   Chr_1b <- tablepart2[["Chr"]]
   Chr_1b <- gsub("[A-Za-z]", "", Chr_1b)
   Chr_1b <- sub("", "chr", Chr_1b)
@@ -116,9 +120,9 @@ Gviz_table <- function(filetable) {
   assembly2 <- separate(data = as.data.frame(assembly2), col = assembly2, into = c("start", "end"), sep = "-")
   if(any(names(tablepart2) == 'variant.region.id') &
       any(names(tablepart2) == 'study.ID')){
-    GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,regionid2,type2)
+    GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,regionid2,type2,clin2)
   } else if(any(names(tablepart2) == 'accession')) {
-    GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,acc2,type2)
+    GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,acc2,type2,clin2)
   } else {
     GRCh37_assembly2 <- data.frame(id2,Chr_1b,assembly2,type2)
   }
@@ -130,6 +134,8 @@ Gviz_table <- function(filetable) {
   if(any(names(tablepart3) == 'variation.type')){type3 <- tablepart3[3]} else {type3 <- tablepart3[5]}
   if(any(names(tablepart3) == 'variant.region.id')){regionid3 <- tablepart3[2]}
   if(any(names(tablepart3) == 'accession')){acc3 <- tablepart3[3]}
+  if(any(names(tablepart3) == 'dbVar.variant.id')){clin3 <- tablepart3[10]}
+  if(any(names(tablepart3) == 'ClinVar.variant.id')){clin3 <- tablepart3[4]}
   Chr_1c <- tablepart3[["Chr"]]
   Chr_1c <- gsub("[A-Za-z]", "", Chr_1c)
   Chr_1c <- sub("", "chr", Chr_1c)
@@ -138,9 +144,9 @@ Gviz_table <- function(filetable) {
   assembly3 <- separate(data = as.data.frame(assembly3), col = assembly3, into = c("start", "end"), sep = "-")
   if(any(names(tablepart3) == 'variant.region.id') &
       any(names(tablepart3) == 'study.ID')){
-    GRCh37_assembly3 <- data.frame(id3,Chr_1c,assembly3,regionid3,type3)
+    GRCh37_assembly3 <- data.frame(id3,Chr_1c,assembly3,regionid3,type3,clin3)
   } else if(any(names(tablepart3) == 'accession')) {
-    GRCh37_assembly3 <- data.frame(id3,Chr_1c,assembly3,acc3,type3)
+    GRCh37_assembly3 <- data.frame(id3,Chr_1c,assembly3,acc3,type3,clin3)
   } else {
     GRCh37_assembly3 <- data.frame(id3,Chr_1c,assembly3,type3)
   }
@@ -152,12 +158,14 @@ Gviz_table <- function(filetable) {
 }
 ```
 
-### Make GRanges Object from data frame and set colors for different types
+### Make GRanges Object from data frame and set colors to different variant (sub)types
 
 ```{r GRanges}
 TableObject <- Gviz_table(filename)
 TableObject
 names(TableObject)[names(TableObject) == "variant.call.type"] <- "type"
+names(TableObject)[names(TableObject) == "clinical.assertion"] <- "interpretation"
+names(TableObject)[names(TableObject) == "description"] <- "interpretation"
 TableObject$start[as.numeric(TableObject$start)<end1] <- end1
 TableObject$end[as.numeric(TableObject$end)>end2] <- end2
 TableObject$end[is.na(TableObject$end)] <- TableObject$start
@@ -169,7 +177,44 @@ if(as.numeric(TableObject$end[1])-as.numeric(TableObject$start[1]) > 100){
 } else {showthis <- list(showFeatureId = T, feature = TableObject$variant.region.id, showId = F, stackHeight = 0.2, 
                          min.width = 3.5, rotation.item = 35)}
 
-levels(GrangesObject$type) <- c("#7AC5CD","#E6E6FA","#D8BFD8","#2B547E","#FAD1C1","#90EE90","#BFE3B6")
+if(any(names(TableObject) == 'interpretation')){
+  levels(GrangesObject$interpretation) <- list("#FF0000"="['Pathogenic']", 
+                                               "#708090"="['Uncertain significance']",
+                                               "#FF8C00"="['Likely pathogenic']",
+                                               "#008000"="['Benign']",
+                                               "#000000"="[]",
+                                               "#FF0000"="Pathogenic", 
+                                              "#708090"="Uncertain significance",
+                                              "#FF8C00"="Likely pathogenic",
+                                              "#008000"="Benign",
+                                              "#000000"="")
+  clinint <- as.character(GrangesObject$interpretation)
+} else {
+  clinint = "black"
+}
+
+GrangesObject$type <- as.factor(gsub(".*//.*", "//",GrangesObject$type))
+levels(GrangesObject$type) <- list("#DFC27D"="copy number gain",
+                                "#80CDC1"="copy number loss",
+                                "#BF812D"="//",
+                                "#F46D43"="insertion",
+                                "#F46D43"="ins",
+                                "#D73027"="inversion",
+                                "#4575B4"="short tandem repeat",
+                                "#A6CEE3"="copy-neutral loss of heterozygosity",
+                                "#B2DF8A"="interchromosomal translocation",
+                                "#FB9A99"="tandem duplication",
+                                "#FF7F00"="complex substitution",
+                                "#E31A1C"="copy number variation",
+                                "#8DA0CB"="novel sequence insertion",
+                                "#9970AB"="single nucleotide variant",
+                                "#9970AB"="snv",
+                                "#1B7837"="delins",
+                                "#01665E"="deletion",
+                                "#01665E"="del",
+                                "#8C510A"="duplication",
+                                "#CAB2D6"="alu insertion",
+                                "#FFD92F"="sva insertion")
 types <- as.character(GrangesObject$type)
 
 ```
@@ -179,35 +224,35 @@ types <- as.character(GrangesObject$type)
 ```{r tracks}
 chr1 <- as.character(unique(seqnames(GrangesObject)))
 itrack1 <- IdeogramTrack(genome = "hg19", chromosome = chr1,
-                         background.panel = "#FFFEDB",
+                         background.panel = "#FFFEDB", lwd = 1.2,
                          background.title = "#FFFEDB", cex = 1.2,
                          showBandId = TRUE, cex.bands = 0.85)
 grtrack1 <- GeneRegionTrack(GeneModel, genome = "hg19", chromosome = chr1, 
                             name = "Gene Model",
                             transcriptAnnotation = "symbol",
-                            background.title = "#EEC591",
+                            background.title = "#DCDCDC",
                             background.panel = "#FFFEDB",
-                            col.border.title = "dark gray",
-                            cex.title = 1.1, showId = TRUE, cex.group = 0.9, 
-                            col.id = "white")
+                            col.border.title = "black", col = NULL,
+                            cex.title = 1.1, showId = TRUE, cex.group = 0.9, fill = "#DCDCDC")
 gtrack1 <- GenomeAxisTrack(background.panel = "#FFFEDB",
-                           background.title = "#FA8072",
+                           background.title = "#FFFEDB", 
                            range=IRanges(start = start,
                                          end = end,
                                          names = gene),
-                           col.border.title = "dark gray", showId = TRUE, cex = 1.1)
+                           col.border.title = "#FFFEDB", showId = TRUE, cex = 1.1,
+                           col.range = "black", col = "black", lwd = 1)
 atrack1 <- AnnotationTrack(GrangesObject,
                            name = typeofvariant,
-                           background.title = "#7AC5CD",
+                           background.title = "dark gray",
                            background.panel = "#FFFEDB",
-                           col.border.title = "dark gray",
+                           col.border.title = "black",
                            cex.title = 1.1, 
                            feature = showthis$feature, 
                            cex.feature = 1,
                            fontcolor.feature = "#616771", cex.group = 0.5, stackHeight = showthis$stackHeight,
                            showFeatureId = showthis$showFeatureId, showId = showthis$showId, 
                            min.width = showthis$min.width, rotation.item = showthis$rotation.item,
-                           fill = types)
+                           fill = types, fontcolor.item = clinint, col = NULL)
 ```
 
 ### Plot tracks
@@ -217,9 +262,8 @@ Don't forget to show the plot in a new window.
 ```{r plot}
 plotTracks(list(itrack1,gtrack1,grtrack1,atrack1),
            from = end1, to = end2, 
-           col = NULL,
            add53 = TRUE, add35 = TRUE,
-           fill.range = "#FA8072",
+           fill.range = "dark gray",
            fontface = 2, title.width = 0.3, 
            sizes = c(0.3,0.5,0.5,1.9),
            margin = 0, cex.id = 1.2)
