@@ -9,7 +9,7 @@ output: html_document
 
 ```{r para}
 gene <- "Dipeptidyl Peptidase 9"
-typeofvariant <- "Less common variants"
+typeofvariant <- "Common short variants"
 
 if(gene == "Dipeptidyl Peptidase 9"){start = 4675239 
                                     end = 4723855}
@@ -178,6 +178,7 @@ TableObject$chr[TableObject$type == 'interchromosomal translocation'] <- "chr19"
 TableObject$chr[TableObject$type == 'interchromosomal translocation'] <- "chr15"
 }
 TableObject$end[is.na(TableObject$end)] <- TableObject$start
+#TableObject <- TableObject[which(TableObject$interpretation !="['Pathogenic']"),]
 GrangesObject <- makeGRangesFromDataFrame(TableObject, keep.extra.columns=TRUE)
 
 
@@ -187,7 +188,7 @@ subtypes <- list("#FFB6C1"="copy number gain",
                                 "#FFD700"="//",
                                 "#FF00FF"="insertion",
                                 "#FF00FF"="ins",
-                                "#D73027"="inversion",
+                                "#6db2c6"="inversion",
                                 "#4575B4"="short tandem repeat",
                                 "#BDB76B"="copy-neutral loss of heterozygosity",
                                 "#FF0000"="interchromosomal translocation",
@@ -198,9 +199,9 @@ subtypes <- list("#FFB6C1"="copy number gain",
                                 "#00FFFF"="single nucleotide variant",
                                 "#00FFFF"="snv",
                                 "#98FB98"="delins",
-                                "#DEB887"="deletion",
+                                "#DEB887"="Deletion","#DEB887"="deletion",
                                 "#DEB887"="del",
-                                "#D2691E"="duplication",
+                                "#D2691E"="Duplication","#D2691E"="duplication",
                                 "#FF00FF"="alu insertion",
                                 "#FF00FF"="sva insertion")
 interpretlist <- list("#FF0000"="['Pathogenic']", 
@@ -440,7 +441,7 @@ if(any(names(TableObject) == 'interpretation') == F | length(unique(GrangesObjec
            add53 = TRUE, add35 = TRUE,
            fill.range = "#A52A2A",
            title.width = 0.3, 
-           sizes = c(0.3,0.5,0.5,a2,a3,a4,a5,a6),
+           sizes = c(0.3,0.3,0.3,a2,a3,a4,a5,a6),
            margin = 0, cex.id = 1.2)
 }} else {
   a7 <- length(long$type)/10+0.05
