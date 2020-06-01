@@ -36,11 +36,14 @@ print("9 ---> If you want to search for <Long ClinVar variants>\n")
 print("10 ---> If you want to search for <Common (>1%) short genetic variations in dbSNP>\n")
 print("11 ---> If you want to search for <PubMed Cited short genetic variations in dbSNP>\n")
 print("12 ---> If you want to search for 4, 5, 6, 7, 8, 9, 10, 11\n")
+print("13 ---> If you want to search for <Less common (<1%) short genetic variations in exons in dbSNP>\n")
 choiceofsearch = str(input("Number: "))
-listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11","12"]
+listofnumbers = ["1","2","3","4","5","6","7","8","9","10","11","12","13"]
+### Check if number in listofnumbers
 while choiceofsearch not in listofnumbers:
     choiceofsearch = str(input("Number mentioned above: "))
 print("\nThe current Working Directory is '{}'.\nThe search results will be saved in the folder 'NCBI-search-results'.\n".format(os.getcwd()))
+### Create new folder if it doesn't exist yet
 newfolder = os.getcwd() + "/NCBI-search-results" 
 newfolder2 = os.getcwd() + "/NCBI-search-results/" + gene
 if os.path.isdir(newfolder):
@@ -55,8 +58,9 @@ else:
     os.chdir(newfolder)
     os.mkdir(newfolder2)
     os.chdir(newfolder2)
-######
-'''
+
+#########################################################################################################
+
 searchUCSC = {"hg19":'results-transcripts-UCSC-hg19.csv',"hg38":'results-transcripts-UCSC-hg38.csv'}
 for key in searchUCSC:
     ##### Connection UCSC
@@ -98,12 +102,16 @@ for key in searchUCSC:
     ### Close csv file
     result_transcripts.close()
     print("Results are in '"+searchUCSC[key]+"'\n")
-'''
+
+#########################################################################################################
+
 ##### API-key (NCBI)
 eclient = Client(api_key="8ecce891e7fa036ff84bccc7c74e5138dc09")
 #gene_efetch = eclient.efetch(db='gene', id=91039)
 Entrez.email = "iris.raes@hotmail.com"
-'''
+
+#########################################################################################################
+
 ##### nucleotide search
 ### Setting up query 
 mRNAtranscripts = []
@@ -133,7 +141,7 @@ with open('results-nucleotide.csv', mode='w') as result_nucleotide:
 ### Close csv file
 result_nucleotide.close()
 print("Results are in 'results-nucleotide.csv'\n")
-'''
+
 #########################################################################################################
 
 if choiceofsearch == "12":
@@ -365,10 +373,13 @@ if choiceofsearch == "10":
     terms = {gene+'[All Fields] AND (00000.0100[GLOBAL_MAF] : 00000.1000[GLOBAL_MAF])':'results-common-dbSNP.csv'}
 if choiceofsearch == "11":
     terms = {gene+'[All Fields] AND snp_pubmed_cited[Filter]':'results-cited-dbSNP.csv'}
+if choiceofsearch == "13":
+    terms = {gene+'[All Fields] NOT intron variant[Function_Class] NOT non coding transcript variant[Function_Class] AND (00000.0000[GLOBAL_MAF] : 00000.1000[GLOBAL_MAF])':'results-coding-lesscommon-dbSNP.csv'}
+
 
 ##### dbSNP search
 ### Setting up query 
-if choiceofsearch in ["12","10","11"]:
+if choiceofsearch in ["12","10","11","13"]:
     for key in terms:
         dbSNP = []
         dbSNP_esearch = eclient.esearch(db='snp',term=key)
