@@ -147,7 +147,7 @@ atrack1 <- AnnotationTrack(GrangesObject,
                            stackHeight = 0.2, min.height = 4,
                            showFeatureId = F, showId = F, 
                            min.width = 3.5, fill = types, 
-                           fontface = 2, fontcolor.feature = "black", col = NULL)
+                           fontface = 2, fontcolor.feature = "black", col = "dark grey")
 ```
 
 ### Plot tracks
