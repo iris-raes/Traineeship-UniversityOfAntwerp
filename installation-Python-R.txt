@@ -10,7 +10,6 @@ Go to https://code.visualstudio.com/download and download the latest version.
 2) How to Install Python 3 on Windows 10:
 
 https://www.youtube.com/watch?v=V_ACbv4329E
-(until 3:10)
 
 Open your Visual Studio Code or use Windows PowerShell;
 (On top in Visual Studio Code -> Terminal --> New Terminal)
