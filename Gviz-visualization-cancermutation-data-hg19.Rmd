@@ -106,7 +106,8 @@ tumortypes <- list("#FBEA74"="Bladder urothelial carcinoma", "#FBEA74"="Bladder 
                     "#50c878"="Liver Cancer",
                     "#ee82ee"="Malignant Lymphoma", "#ee82ee"="DLBCL",
                     "#ff0000"="Oral Cancer",
-                    "#ABEBC6"="CARC")
+                    "#ABEBC6"="CARC",
+                    "#CD5C5C"="MM")
 levels(GrangesObject$ttype) <- tumortypes
 types <- as.character(GrangesObject$ttype)
 
