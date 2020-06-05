@@ -164,6 +164,7 @@ Gviz_table <- function(filetable) {
 TableObject <- Gviz_table(filename)
 TableObject
 names(TableObject)[names(TableObject) == "variant.call.type"] <- "type"
+names(TableObject)[names(TableObject) == "variation.type"] <- "type"
 names(TableObject)[names(TableObject) == "clinical.assertion"] <- "interpretation"
 names(TableObject)[names(TableObject) == "description"] <- "interpretation"
 TableObject$start[as.numeric(TableObject$start)<end1] <- end1
@@ -256,7 +257,10 @@ if(any(names(TableObject) == 'interpretation')){
 
 
 GeneModel$symbol2 <- GeneModel$symbol
-levels(GeneModel$symbol2) <- list("#202020"="NM_139159.5")
+levels(GeneModel$symbol2) <- list("#202020"="NM_139159.5","#202020"="XM_011528408.1",
+                                  "#202020"="XM_024451770.1","#202020"="XM_011528410.1",
+                                  "#202020"="NM_130434.5","#202020"="NM_001320876.2",
+                                  "#202020"="NM_001320875.2","#202020"="NM_197960.4")
 GeneModel$symbol2 <- as.character(GeneModel$symbol2)
 GeneModel$symbol2[is.na(GeneModel$symbol2)] <- "#A8A8A8"
 fillmodel <- as.character(GeneModel$symbol2)
@@ -270,7 +274,7 @@ if(as.numeric(TableObject$end[1])-as.numeric(TableObject$start[1]) > 100){
   showthis <- list(showFeatureId = T, feature = TableObject$variant.region.id, showId = F, 
                    stackHeight = 0.75, min.height = 3,
                    min.width = 1, rotation.item = 0)
-} else {showthis <- list(showFeatureId = T, feature = TableObject$variant.region.id, showId = F, 
+} else {showthis <- list(showFeatureId = T, feature = TableObject$dbSNP.variant.id, showId = F, 
                          stackHeight = 0.2, min.height = 4,
                          min.width = 3.5, rotation.item = 35)}
 } else {
