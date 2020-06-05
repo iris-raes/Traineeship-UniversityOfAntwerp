@@ -85,7 +85,7 @@ GrangesObject <- makeGRangesFromDataFrame(filename, keep.extra.columns=TRUE)
 tumortypes <- list("#FBEA74"="Bladder urothelial carcinoma", "#FBEA74"="Bladder Urothelial carcinoma","#FBEA74"="BLCA",
                     "#C0C0C0"="Brain Lower Grade Glioma", "#C0C0C0"="Pediatric Brain Cancer",
                     "#b2d8d8"="Cervical squamous cell carcinoma and endocervical adenocarcinoma",
-                    "#00008b"="Colon adenocarcinoma", "#00008b"="CARC", "#00008b"="CRC",
+                    "#00008b"="Colon adenocarcinoma", "#00008b"="CRC",
                     "#696969"="Glioblastoma multiforme", "#696969"="GBM",
                     "#800020"="Head and Neck squamous cell carcinoma", "#800020"="HNSC",
                     "#ff8c00"="Kidney renal clear cell carcinoma", "#ff8c00"="Renal Cell Cancer","#ff8c00"="KIRC",
@@ -105,12 +105,16 @@ tumortypes <- list("#FBEA74"="Bladder urothelial carcinoma", "#FBEA74"="Bladder 
                     "#CCCCFF"="Esophageal Adenocarcinoma", "#CCCCFF"="ESO",
                     "#50c878"="Liver Cancer",
                     "#ee82ee"="Malignant Lymphoma", "#ee82ee"="DLBCL",
-                    "#ff0000"="Oral Cancer")
+                    "#ff0000"="Oral Cancer",
+                    "#ABEBC6"="CARC")
 levels(GrangesObject$ttype) <- tumortypes
 types <- as.character(GrangesObject$ttype)
 
 GeneModel$symbol2 <- GeneModel$symbol
-levels(GeneModel$symbol2) <- list("#202020"="NM_139159.5")
+levels(GeneModel$symbol2) <- list("#202020"="NM_139159.5","#202020"="XM_011528408.1",
+                                  "#202020"="XM_024451770.1","#202020"="XM_011528410.1",
+                                  "#202020"="NM_130434.5","#202020"="NM_001320876.2",
+                                  "#202020"="NM_001320875.2","#202020"="NM_197960.4")
 GeneModel$symbol2 <- as.character(GeneModel$symbol2)
 GeneModel$symbol2[is.na(GeneModel$symbol2)] <- "#A8A8A8"
 fillmodel <- as.character(GeneModel$symbol2)
