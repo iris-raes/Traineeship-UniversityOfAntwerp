@@ -5,11 +5,12 @@ output: html_document
 
 ### Fill in parameters
 
---- Before running this Rmd document, please fill in the following parameters: gene and resource (TCGA/ICGC/TumorPortal) ---
+--- Before running this Rmd document, please fill in the following parameters: ---                                                                       gene 
+                        resource : TCGA (UCSC)/ICGC-release 16 (UCSC)/ICGC-Data Portal/TumorPortal 
 
 ```{r para}
 gene <- "Dipeptidyl Peptidase 9"
-resource <- "TumorPortal"
+resource <- "ICGC-Data Portal"
 
 if(gene == "Dipeptidyl Peptidase 9"){start = 4675239 
                                     end = 4723855}
@@ -28,9 +29,9 @@ R.version$os
 R.version.string
 ```
 
-### Loading in GeneModel file
+### Loading GeneModel file
 
-Make sure this R script is located in the correct subfolder where the NCBI results are.
+Make sure this R script is located in the correct subfolder where the results are.
 
 ```{r genemodel}
 GeneModel <- read.csv(file="results-transcripts-UCSC-hg19.csv", header = TRUE, sep=";")
@@ -83,30 +84,45 @@ filename
 GrangesObject <- makeGRangesFromDataFrame(filename, keep.extra.columns=TRUE)
 
 tumortypes <- list("#FBEA74"="Bladder urothelial carcinoma", "#FBEA74"="Bladder Urothelial carcinoma","#FBEA74"="BLCA",
+                    "#FBEA74"="Invasive Urothelial Bladder cancer", "#FBEA74"="Bladder Cancer - Urothelial carcinoma",
                     "#C0C0C0"="Brain Lower Grade Glioma", "#C0C0C0"="Pediatric Brain Cancer",
+                    "#C0C0C0"="Glioblastoma multiforme", "#C0C0C0"="GBM", "#C0C0C0"="Pediatric Brain Tumor",
+                    "#C0C0C0"="Brain Cancer - Glioblastoma multiforme", "#C0C0C0"="Brain Cancer - Lower grade glioma",
                     "#b2d8d8"="Cervical squamous cell carcinoma and endocervical adenocarcinoma",
+                    "#b2d8d8"="Cervical squamous cell carcinoma",
                     "#00008b"="Colon adenocarcinoma", "#00008b"="CRC",
-                    "#696969"="Glioblastoma multiforme", "#696969"="GBM",
                     "#800020"="Head and Neck squamous cell carcinoma", "#800020"="HNSC",
+                    "#800020"="Head and Neck Cancer - Squamous cell carcinoma",
+                    "#800020"="Oral Cancer", "#800020"="Thyroid carcinoma", "#800020"="Thyroid Cancer",
+                    "#800020"="Thyroid Papillary carcinoma", "#800020"="Oral Cancer - Gingivobuccal", 
                     "#ff8c00"="Kidney renal clear cell carcinoma", "#ff8c00"="Renal Cell Cancer","#ff8c00"="KIRC",
-                    "#FFFFFF"="Lung adenocarcinoma", "#FFFFFF"="LUAD",
-                    "#e1c699"="Lung squamous cell carcinoma", "#e1c699"="Lung Cancer - Squamous cell carcinoma",  
-                                                              "#e1c699"="LUSC",
-                    "#000000"="Skin Cutaneous Melanoma", "#000000"="MEL",
-                    "#996699"="Stomach adenocarcinoma",
+                    "#FFFFFF"="Lung adenocarcinoma", "#FFFFFF"="LUAD", 
+                    "#FFFFFF"="Lung Cancer - Adenocarcinoma, Squamous cell carcinoma",
+                    "#FFFFFF"="Lung squamous cell carcinoma", "#FFFFFF"="Lung Cancer - Squamous cell carcinoma",  
+                                                              "#FFFFFF"="LUSC",
+                    "#000000"="Skin Cutaneous Melanoma", "#000000"="MEL", "#000000"="Skin Melanoma",
+                    "#996699"="Stomach adenocarcinoma", "#996699"="Stomach - Multiple histological subtypes",
+                    "#996699"="Stomach Cancer - Intestinal- and diffuse-type",
                     "#ffe5b4"="Uterine Corpus Endometrial Carcinoma", "#ffe5b4"="UCEC",
                     "#ffc0cb"="Breast invasive carcinoma", "#ffc0cb"="Breast Triple Negative/Lobular Cancer", "#ffc0cb"="BRCA",
+                    "#ffc0cb"="Breast Cancer - ER+ve, HER2-ve", "#ffc0cb"="Breast - Ductal & lobular", 
+                    "#ffc0cb"="Breast - Triple Negative/lobular/other",
                     "#006666"="Ovarian serous cystadenocarcinoma", "#006666"="Ovarian Cancer", "#006666"="OV",
+                    "#006666"="Ovarian Serous cystadenocarcinoma",
                     "#800080"="Pancreatic adenocarcinoma", "#800080"="Pancreatic Cancer", 
-                                                           "#800080"="Pancreatic Cancer Endocrine neoplasms",
+                    "#800080"="Pancreatic Cancer Endocrine neoplasms", "#800080"="Pancreatic Cancer - Ductal adenocarcinoma", 
                     "#add8e6"="Prostate adenocarcinoma",
-                    "#b2d8d8"="Thyroid carcinoma", "#b2d8d8"="Thyroid Cancer",
                     "#FFFF00"="Acute Myeloid Leukemia", "#FFFF00"="CLL",
-                    "#CCCCFF"="Esophageal Adenocarcinoma", "#CCCCFF"="ESO",
-                    "#50c878"="Liver Cancer",
-                    "#ee82ee"="Malignant Lymphoma", "#ee82ee"="DLBCL",
-                    "#ff0000"="Oral Cancer",
-                    "#ABEBC6"="CARC",
+                    "#CCCCFF"="Esophageal Adenocarcinoma", "#CCCCFF"="ESO", "#CCCCFF"="Esophageal Cancer - Squamous carcinoma",
+                    "#CCCCFF"="Esophagus adenocarcinoma",
+                    "#50c878"="Liver Cancer", "#50c878"="Liver Cancer - Hepatocellular carcinoma HBV-associated",
+                    "#50c878"="Liver Cancer - Hepatocellular carcinoma (Secondary to alcohol and adiposity)",
+                    "#50c878"="Liver Cancer - Hepatocellular carcinoma (virus-associated)",
+                    "#50c878"="Liver Cancer - Hepatocellular carcinoma",
+                    "#50c878"="Gall Bladder - Multiple histological subtypes",
+                    "#ee82ee"="Malignant Lymphoma", "#ee82ee"="DLBCL", "#ee82ee"="Germinal center B-cell derived lymphomas",
+                    "#ee82ee"="T-cell and NK-cell lymphoma",
+                    "#333333"="CARC",
                     "#CD5C5C"="MM")
 levels(GrangesObject$ttype) <- tumortypes
 types <- as.character(GrangesObject$ttype)
