@@ -28,7 +28,7 @@ R.version$os
 R.version.string
 ```
 
-### Loading in GeneModel file
+### Loading GeneModel file
 
 Make sure this R script is located in the correct subfolder where the NCBI results are.
 
